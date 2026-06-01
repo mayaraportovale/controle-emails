@@ -5,6 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Controle de E-mails — Backoffice</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+  import {
+    getFirestore, collection, doc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
+
+  // =====================================================================
+  // 🔧 CONFIGURAÇÃO DO FIREBASE
+  // Substitua os valores abaixo pelos do seu projeto Firebase.
+  // Crie em: https://console.firebase.google.com
+  // Projeto → Configurações → Seus apps → Adicionar app Web → copiar firebaseConfig
+  // =====================================================================
+  const firebaseConfig = {
+    apiKey:            "COLOQUE_SUA_API_KEY_AQUI",
+    authDomain:        "COLOQUE_SEU_AUTH_DOMAIN_AQUI",
+    projectId:         "COLOQUE_SEU_PROJECT_ID_AQUI",
+    storageBucket:     "COLOQUE_SEU_STORAGE_BUCKET_AQUI",
+    messagingSenderId: "COLOQUE_SEU_MESSAGING_SENDER_ID_AQUI",
+    appId:             "COLOQUE_SEU_APP_ID_AQUI"
+  };
+  // =====================================================================
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // Expõe para o código global
+  window._db           = db;
+  window._fsDoc        = doc;
+  window._fsColl       = collection;
+  window._fsGetDocs    = getDocs;
+  window._fsSetDoc     = setDoc;
+  window._fsDeleteDoc  = deleteDoc;
+  window._fsOnSnapshot = onSnapshot;
+  window._fsQuery      = query;
+  window._fsOrderBy    = orderBy;
+
+  window._firebaseReady = true;
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
 <style>
   :root {
     --bg: #F7F6F2;
@@ -57,40 +99,16 @@
     box-shadow: var(--shadow-lg);
     width: 360px;
   }
-  .login-logo {
-    font-size: 32px;
-    margin-bottom: 8px;
-  }
-  .login-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-  .login-sub {
-    font-size: 13px;
-    color: var(--text3);
-    margin-bottom: 32px;
-  }
-  .login-btns {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  .login-logo { font-size: 32px; margin-bottom: 8px; }
+  .login-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--text3); margin-bottom: 32px; }
+  .login-btns { display: flex; flex-direction: column; gap: 12px; }
   .login-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 14px 24px;
-    border-radius: var(--radius);
-    border: 2px solid var(--border);
-    background: var(--surface);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.18s;
-    color: var(--text);
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: 14px 24px; border-radius: var(--radius);
+    border: 2px solid var(--border); background: var(--surface);
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: all 0.18s; color: var(--text);
   }
   .login-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
   .login-btn.may { border-color: var(--may-color); color: var(--may-color); }
@@ -98,127 +116,80 @@
   .login-btn.lu { border-color: var(--lu-color); color: var(--lu-color); }
   .login-btn.lu:hover { background: #f0faf7; }
   .login-btn .avatar {
-    width: 32px; height: 32px;
-    border-radius: 50%;
+    width: 32px; height: 32px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    font-weight: 700;
-    color: #fff;
+    font-size: 14px; font-weight: 700; color: #fff;
   }
   .login-btn.may .avatar { background: var(--may-color); }
   .login-btn.lu .avatar { background: var(--lu-color); }
+
+  /* Firebase config warning */
+  .firebase-warning {
+    background: #FEF3DC;
+    border: 1px solid #f0c060;
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #7A4F00;
+    text-align: left;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .firebase-warning strong { display: block; margin-bottom: 4px; }
 
   /* ========== APP ========== */
   #app-screen { display: none; }
   .layout { display: flex; min-height: 100vh; }
 
   .sidebar {
-    width: 220px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    padding: 28px 0;
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    z-index: 100;
+    width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+    padding: 28px 0; display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
   }
-
-  .sidebar-logo {
-    padding: 0 20px 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
-  }
+  .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
   .sidebar-logo span {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text);
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text);
   }
   .sidebar-logo small {
-    display: block;
-    font-size: 11px;
-    color: var(--text3);
-    margin-top: 2px;
-    font-weight: 400;
-    letter-spacing: 0;
-    text-transform: none;
+    display: block; font-size: 11px; color: var(--text3);
+    margin-top: 2px; font-weight: 400; letter-spacing: 0; text-transform: none;
   }
 
-  /* User badge in sidebar */
-  .user-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0 20px 16px;
-    margin-bottom: 4px;
-  }
+  .user-badge { display: flex; align-items: center; gap: 8px; padding: 0 20px 16px; margin-bottom: 4px; }
   .user-avatar {
-    width: 28px; height: 28px;
-    border-radius: 50%;
+    width: 28px; height: 28px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-    color: #fff;
-    flex-shrink: 0;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
   }
   .user-name-label { font-size: 12.5px; font-weight: 600; }
   .user-role { font-size: 11px; color: var(--text3); }
 
   .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 20px;
-    font-size: 13.5px;
-    color: var(--text2);
-    cursor: pointer;
-    border: none;
-    background: none;
-    width: 100%;
-    text-align: left;
-    border-radius: 0;
-    transition: background 0.15s, color 0.15s;
+    display: flex; align-items: center; gap: 10px; padding: 9px 20px;
+    font-size: 13.5px; color: var(--text2); cursor: pointer;
+    border: none; background: none; width: 100%; text-align: left;
+    border-radius: 0; transition: background 0.15s, color 0.15s;
   }
   .nav-item:hover { background: var(--surface2); color: var(--text); }
   .nav-item.active { background: var(--text); color: #fff; }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-  .sidebar-footer {
-    margin-top: auto;
-    padding: 16px 20px 0;
-    border-top: 1px solid var(--border);
-  }
+  .sidebar-footer { margin-top: auto; padding: 16px 20px 0; border-top: 1px solid var(--border); }
   .sidebar-footer p { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
   .btn-logout {
-    font-size: 11px;
-    color: var(--text3);
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    font-family: 'DM Sans', sans-serif;
+    font-size: 11px; color: var(--text3); background: none;
+    border: none; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif;
     text-decoration: underline;
   }
   .btn-logout:hover { color: var(--red-text); }
 
   /* MAIN */
-  .main {
-    margin-left: 220px;
-    flex: 1;
-    padding: 32px 36px;
-    max-width: 1200px;
-  }
-
+  .main { margin-left: 220px; flex: 1; padding: 32px 36px; max-width: 1200px; }
   .page { display: none; }
   .page.active { display: block; }
-
   .page-header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 28px;
+    display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px;
   }
   .page-title { font-size: 22px; font-weight: 600; }
   .page-sub { font-size: 13px; color: var(--text3); margin-top: 3px; }
@@ -226,88 +197,55 @@
   /* METRICS */
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
   .metric-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    box-shadow: var(--shadow);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow);
   }
-  .metric-card .label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 8px; }
+  .metric-card .label {
+    font-size: 11px; font-weight: 500; text-transform: uppercase;
+    letter-spacing: 0.07em; color: var(--text3); margin-bottom: 8px;
+  }
   .metric-card .value { font-size: 30px; font-weight: 600; font-family: 'DM Mono', monospace; }
   .metric-card .value.c-amber { color: #7A4F00; }
   .metric-card .value.c-green { color: #2D5A0E; }
   .metric-card .value.c-red { color: #8B1A1A; }
 
   /* FILTERS */
-  .filters {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
+  .filters { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
   .search-wrap { position: relative; flex: 2; min-width: 200px; }
   .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text3); pointer-events: none; }
   .search-wrap input { padding-left: 32px; }
 
   input[type=text], input[type=date], select, textarea {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13.5px;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-    color: var(--text);
-    width: 100%;
-    outline: none;
-    transition: border-color 0.15s;
+    font-family: 'DM Sans', sans-serif; font-size: 13.5px; padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface); color: var(--text); width: 100%;
+    outline: none; transition: border-color 0.15s;
   }
   input:focus, select:focus, textarea:focus { border-color: var(--text); }
   textarea { resize: vertical; min-height: 80px; }
 
   /* TABLE */
   .table-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    box-shadow: var(--shadow);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
   }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead { background: var(--surface2); }
   th {
-    padding: 11px 14px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--text3);
-    white-space: nowrap;
-    border-bottom: 1px solid var(--border);
+    padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3);
+    white-space: nowrap; border-bottom: 1px solid var(--border);
   }
-  td {
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    vertical-align: middle;
-  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--surface2); }
-
   .assunto-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* BADGES */
   .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    font-weight: 500;
-    padding: 3px 9px;
-    border-radius: 99px;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+    font-weight: 500; padding: 3px 9px; border-radius: 99px; white-space: nowrap;
   }
   .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
   .badge-pendente { background: var(--amber-bg); color: var(--amber-text); }
@@ -319,20 +257,11 @@
 
   /* BUTTONS */
   .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13.5px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-    transition: background 0.15s, border-color 0.15s;
-    text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+    border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    transition: background 0.15s, border-color 0.15s; text-decoration: none;
   }
   .btn:hover { background: var(--surface2); }
   .btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
@@ -346,12 +275,8 @@
 
   /* FORM */
   .form-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px 32px;
-    box-shadow: var(--shadow);
-    max-width: 700px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); max-width: 700px;
   }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -360,116 +285,71 @@
   .form-actions { margin-top: 24px; display: flex; gap: 10px; justify-content: flex-end; }
 
   /* EMPTY */
-  .empty-state {
-    text-align: center;
-    padding: 48px 20px;
-    color: var(--text3);
-  }
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
   .empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; opacity: 0.4; }
   .empty-state p { font-size: 14px; }
 
   /* MODAL */
   .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
+    z-index: 200; align-items: center; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal {
-    background: var(--surface);
-    border-radius: var(--radius);
-    padding: 28px 32px;
-    width: 560px;
-    max-width: 95vw;
-    box-shadow: var(--shadow-lg);
+    background: var(--surface); border-radius: var(--radius); padding: 28px 32px;
+    width: 560px; max-width: 95vw; box-shadow: var(--shadow-lg);
   }
   .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
 
   /* TOAST */
   .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--text);
-    color: #fff;
-    padding: 12px 20px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 500;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.2s, transform 0.2s;
-    z-index: 999;
-    pointer-events: none;
+    position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff;
+    padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s;
+    z-index: 999; pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
 
   /* TABLE ACTIONS */
   .table-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface);
   }
   .count-label { font-size: 12px; color: var(--text3); }
 
+  /* SYNC indicator */
+  .sync-dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: #2D5A0E; margin-right: 5px; vertical-align: middle;
+    animation: pulse-sync 2s ease-in-out infinite;
+  }
+  .sync-dot.offline { background: var(--red-text); animation: none; }
+  @keyframes pulse-sync { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
   /* LOADING OVERLAY */
   .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(247,246,242,0.85);
-    z-index: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 12px;
-    font-size: 14px;
-    color: var(--text2);
+    position: fixed; inset: 0; background: rgba(247,246,242,0.9);
+    z-index: 500; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px; font-size: 14px; color: var(--text2);
   }
   .loading-overlay.hidden { display: none; }
   .spinner {
-    width: 28px; height: 28px;
-    border: 3px solid var(--border);
-    border-top-color: var(--text);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    width: 28px; height: 28px; border: 3px solid var(--border);
+    border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* USER TABS (view all) */
-  .view-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
+  /* USER TABS */
+  .view-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
   .view-tab {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 99px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    color: var(--text2);
-    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+    border-radius: 99px; border: 1px solid var(--border); background: var(--surface);
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; color: var(--text2); transition: all 0.15s;
   }
   .view-tab:hover { background: var(--surface2); }
   .view-tab.active { background: var(--text); color: #fff; border-color: var(--text); }
-  .view-tab .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-  }
+  .view-tab .dot { width: 8px; height: 8px; border-radius: 50%; }
 
   @media (max-width: 900px) {
     .sidebar { width: 60px; }
@@ -495,14 +375,17 @@
     <div class="login-logo">📬</div>
     <div class="login-title">Controle de E-mails</div>
     <div class="login-sub">Backoffice — quem está acessando?</div>
+    <div class="firebase-warning" id="firebase-warning">
+      <strong>⚠️ Firebase não configurado</strong>
+      Abra o arquivo index.html e substitua os valores <code>COLOQUE_SUA_*</code>
+      pelas credenciais do seu projeto Firebase. Veja o README para instruções.
+    </div>
     <div class="login-btns">
       <button class="login-btn may" onclick="entrar('may')">
-        <div class="avatar">M</div>
-        May
+        <div class="avatar">M</div>May
       </button>
       <button class="login-btn lu" onclick="entrar('lu')">
-        <div class="avatar">L</div>
-        Lu
+        <div class="avatar">L</div>Lu
       </button>
     </div>
   </div>
@@ -517,9 +400,7 @@
       <span>📬 Backoffice</span>
       <small>Controle de E-mails</small>
     </div>
-
     <div class="user-badge" id="user-badge"></div>
-
     <button class="nav-item active" id="nav-painel" onclick="switchPage('painel')">
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       <span>Painel</span>
@@ -532,16 +413,14 @@
       <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
       <span>Exportar CSV</span>
     </button>
-
     <div class="sidebar-footer">
-      <p id="save-info">Salvamento automático ativo</p>
+      <p id="save-info"><span class="sync-dot" id="sync-dot"></span>Sincronizado</p>
       <button class="btn-logout" onclick="sair()">Trocar usuário</button>
     </div>
   </aside>
 
   <!-- MAIN -->
   <main class="main">
-
     <!-- PAINEL -->
     <div id="page-painel" class="page active">
       <div class="page-header">
@@ -555,9 +434,7 @@
         </button>
       </div>
 
-      <!-- View tabs -->
       <div class="view-tabs" id="view-tabs"></div>
-
       <div class="metrics" id="metrics"></div>
 
       <div class="filters">
@@ -588,14 +465,8 @@
           <table>
             <thead>
               <tr>
-                <th>Envio</th>
-                <th>Assunto</th>
-                <th>Prazo</th>
-                <th>Status</th>
-                <th>Responsável</th>
-                <th>Cobrar?</th>
-                <th>Observações</th>
-                <th></th>
+                <th>Envio</th><th>Assunto</th><th>Prazo</th><th>Status</th>
+                <th>Responsável</th><th>Cobrar?</th><th>Observações</th><th></th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -661,7 +532,6 @@
         </div>
       </div>
     </div>
-
   </main>
 </div>
 </div>
@@ -681,91 +551,106 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ===================== STORAGE via Anthropic API =====================
-// Dados ficam salvos num "arquivo" simulado via Claude como banco de dados
-// Usamos window.storage (artifact persistence) se disponível, senão localStorage como fallback
-
+// =====================================================================
+// USERS
+// =====================================================================
 const USERS = {
   may: { label: 'May', color: '#6D4C9F', initial: 'M' },
   lu:  { label: 'Lu',  color: '#1A6B5A', initial: 'L' }
 };
 
 let currentUser = null;
-let viewUser = null; // null = ver só o próprio, 'all' = todos
-let dados = [];
-let editIdx = null;
-let deleteIdx = null;
-let allData = { may: [], lu: [] }; // cache de todos os dados
+let viewUser    = null;
+let editIdx     = null;   // { user, docId }
+let deleteTarget = null;
+let allData     = { may: [], lu: [] };
+let unsubscribes = [];     // Firestore listeners
 
-// ===================== STORAGE HELPERS =====================
-async function storageGet(key) {
-  if (window.storage) {
-    try {
-      const res = await window.storage.get(key, true); // shared=true
-      return res ? JSON.parse(res.value) : null;
-    } catch(e) { return null; }
-  }
-  // fallback localStorage
+// =====================================================================
+// FIREBASE CHECK
+// =====================================================================
+function isFirebaseConfigured() {
+  // Verifica se as chaves ainda têm o placeholder
   try {
-    const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : null;
-  } catch(e) { return null; }
-}
-
-async function storageSet(key, value) {
-  if (window.storage) {
-    try {
-      await window.storage.set(key, JSON.stringify(value), true); // shared=true
-      return true;
-    } catch(e) { return false; }
-  }
-  // fallback localStorage
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    return true;
+    const db = window._db;
+    if (!db) return false;
+    const cfg = db.app.options;
+    return cfg.apiKey && !cfg.apiKey.includes('COLOQUE');
   } catch(e) { return false; }
 }
 
-// ===================== AUTH =====================
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    if (!window._firebaseReady || !isFirebaseConfigured()) {
+      document.getElementById('firebase-warning').style.display = 'block';
+    }
+  }, 1500);
+});
+
+// =====================================================================
+// FIRESTORE HELPERS
+// =====================================================================
+function getCollectionRef(user) {
+  return window._fsColl(window._db, `emails_${user}`);
+}
+
+function docRef(user, docId) {
+  return window._fsDoc(window._db, `emails_${user}`, docId);
+}
+
+// Converte documento Firestore → objeto local
+function fromFirestore(snap) {
+  return { ...snap.data(), _docId: snap.id };
+}
+
+// =====================================================================
+// AUTH
+// =====================================================================
 async function entrar(user) {
+  if (!window._firebaseReady) {
+    showToast('Firebase não inicializado. Configure as credenciais.');
+    return;
+  }
   currentUser = user;
-  viewUser = user; // default: ver só seus
+  viewUser    = user;
 
-  // Mostra app
   document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app-screen').style.display = 'block';
+  document.getElementById('app-screen').style.display   = 'block';
 
-  // Renderiza badge do usuário
   const u = USERS[user];
   document.getElementById('user-badge').innerHTML = `
     <div class="user-avatar" style="background:${u.color}">${u.initial}</div>
     <div>
       <div class="user-name-label">${u.label}</div>
       <div class="user-role">Logada</div>
-    </div>
-  `;
+    </div>`;
 
-  // Atualiza data
   const hoje = new Date();
-  document.getElementById('hoje-label').textContent = hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('hoje-label').textContent =
+    hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 
-  // Carrega dados
   await carregarTodos();
+  iniciarListeners();
   renderViewTabs();
   render();
 }
 
 function sair() {
+  // Para os listeners em tempo real
+  unsubscribes.forEach(fn => fn());
+  unsubscribes = [];
+
   currentUser = null;
-  viewUser = null;
-  dados = [];
-  allData = { may: [], lu: [] };
+  viewUser    = null;
+  allData     = { may: [], lu: [] };
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display   = 'none';
   switchPage('painel');
 }
 
-// ===================== DATA LOAD/SAVE =====================
+// =====================================================================
+// LOAD / REALTIME LISTENERS
+// =====================================================================
 function showLoading(msg) {
   document.getElementById('loading-overlay').classList.remove('hidden');
   document.getElementById('loading-msg').textContent = msg || 'Carregando...';
@@ -777,42 +662,98 @@ function hideLoading() {
 async function carregarTodos() {
   showLoading('Carregando dados...');
   try {
-    const mayData = await storageGet('emails_may');
-    const luData = await storageGet('emails_lu');
-    allData.may = mayData || getInitialData();
-    allData.lu = luData || [];
+    for (const user of ['may', 'lu']) {
+      const snap = await window._fsGetDocs(getCollectionRef(user));
+      if (snap.empty && user === 'may') {
+        // Primeira vez: seed com dados iniciais da May
+        await seedInitialData();
+        const snap2 = await window._fsGetDocs(getCollectionRef('may'));
+        allData.may = snap2.docs.map(fromFirestore);
+      } else {
+        allData[user] = snap.docs.map(fromFirestore);
+      }
+    }
   } catch(e) {
-    allData.may = getInitialData();
-    allData.lu = [];
+    console.error('Erro ao carregar:', e);
+    showToast('Erro ao conectar ao Firebase. Verifique a configuração.');
   }
   hideLoading();
 }
 
-async function salvarUsuario(user) {
-  showLoading('Salvando...');
-  const ok = await storageSet(`emails_${user}`, allData[user]);
-  hideLoading();
-  const now = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('save-info').textContent = ok ? `Salvo às ${now}` : 'Erro ao salvar';
-  return ok;
+// Insere os dados iniciais da May no Firestore (só na primeira vez)
+async function seedInitialData() {
+  const initial = getInitialData();
+  for (const r of initial) {
+    const id = String(r.id).padStart(6, '0');
+    await window._fsSetDoc(docRef('may', id), { ...r });
+  }
 }
 
+// Listener em tempo real — atualiza a tela de ambas sempre que o Firestore mudar
+function iniciarListeners() {
+  for (const user of ['may', 'lu']) {
+    const unsub = window._fsOnSnapshot(getCollectionRef(user), (snap) => {
+      allData[user] = snap.docs.map(fromFirestore);
+      setSyncStatus(true);
+      if (currentUser) render();
+    }, (err) => {
+      console.error('Listener error:', err);
+      setSyncStatus(false);
+    });
+    unsubscribes.push(unsub);
+  }
+}
+
+function setSyncStatus(online) {
+  const dot  = document.getElementById('sync-dot');
+  const info = document.getElementById('save-info');
+  if (!dot) return;
+  if (online) {
+    dot.classList.remove('offline');
+    const now = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    info.innerHTML = `<span class="sync-dot" id="sync-dot"></span>Atualizado ${now}`;
+  } else {
+    dot.classList.add('offline');
+    info.innerHTML = `<span class="sync-dot offline" id="sync-dot"></span>Sem conexão`;
+  }
+}
+
+// =====================================================================
+// SAVE / DELETE
+// =====================================================================
+async function salvarNoFirestore(user, registro) {
+  const id = String(registro.id || registro._docId).padStart(6, '0');
+  const { _docId, _user, ...data } = registro; // remove campos locais
+  await window._fsSetDoc(docRef(user, id), data);
+  return id;
+}
+
+async function deletarNoFirestore(user, docId) {
+  await window._fsDeleteDoc(docRef(user, docId));
+}
+
+// =====================================================================
+// DATA HELPERS
+// =====================================================================
 function getDadosAtivos() {
   if (viewUser === 'all') {
-    // Combina os dados de ambas com um marcador de usuário
-    const mayD = (allData.may || []).map(r => ({...r, _user: 'may'}));
-    const luD  = (allData.lu  || []).map(r => ({...r, _user: 'lu'}));
-    return [...mayD, ...luD].sort((a,b) => (b.id||0) - (a.id||0));
+    const mayD = (allData.may || []).map(r => ({ ...r, _user: 'may' }));
+    const luD  = (allData.lu  || []).map(r => ({ ...r, _user: 'lu'  }));
+    return [...mayD, ...luD].sort((a, b) => (b.id || 0) - (a.id || 0));
   }
-  return allData[viewUser] || [];
+  return (allData[viewUser] || []).sort((a, b) => (b.id || 0) - (a.id || 0));
 }
 
-// ===================== VIEW TABS =====================
+function nextId(user) {
+  const arr = allData[user] || [];
+  return arr.length ? Math.max(...arr.map(d => d.id || 0)) + 1 : 1;
+}
+
+// =====================================================================
+// VIEW TABS
+// =====================================================================
 function renderViewTabs() {
   const tabs = document.getElementById('view-tabs');
-  const uMay = USERS.may;
-  const uLu  = USERS.lu;
-
   tabs.innerHTML = `
     <button class="view-tab ${viewUser === currentUser ? 'active' : ''}" onclick="setViewUser('${currentUser}')">
       <span class="dot" style="background:${USERS[currentUser].color}"></span>
@@ -821,8 +762,7 @@ function renderViewTabs() {
     <button class="view-tab ${viewUser === 'all' ? 'active' : ''}" onclick="setViewUser('all')">
       <span class="dot" style="background:#9C9A93"></span>
       Todos
-    </button>
-  `;
+    </button>`;
 }
 
 function setViewUser(u) {
@@ -831,7 +771,9 @@ function setViewUser(u) {
   render();
 }
 
-// ===================== UTILS =====================
+// =====================================================================
+// UTILS
+// =====================================================================
 const HOJE = new Date(); HOJE.setHours(0,0,0,0);
 function calcStatus(r) {
   if (r.status === 'Respondido') return 'Respondido';
@@ -845,69 +787,72 @@ function fmtDate(iso) {
   return `${d}/${m}/${y}`;
 }
 function badgeStatus(s) {
-  const m = {Pendente:'pendente',Respondido:'respondido',Atrasado:'atrasado'};
+  const m = { Pendente:'pendente', Respondido:'respondido', Atrasado:'atrasado' };
   return `<span class="badge badge-${m[s]||'pendente'}">${s}</span>`;
 }
 function badgeCobrar(c) {
   if (!c || c==='—') return '—';
-  const m = {Resolvido:'resolvido','No prazo':'prazo',Sim:'sim'};
+  const m = { Resolvido:'resolvido', 'No prazo':'prazo', Sim:'sim' };
   return `<span class="badge badge-${m[c]||'pendente'}">${c}</span>`;
 }
-function nextId(user) {
-  const arr = allData[user] || [];
-  return arr.length ? Math.max(...arr.map(d=>d.id||0))+1 : 1;
-}
 
-// ===================== RENDER =====================
+// =====================================================================
+// RENDER
+// =====================================================================
 function renderMetrics() {
   const lista = getDadosAtivos();
   const total = lista.length;
-  const pend = lista.filter(r=>calcStatus(r)==='Pendente').length;
-  const resp = lista.filter(r=>calcStatus(r)==='Respondido').length;
-  const atr = lista.filter(r=>calcStatus(r)==='Atrasado').length;
+  const pend  = lista.filter(r => calcStatus(r) === 'Pendente').length;
+  const resp  = lista.filter(r => calcStatus(r) === 'Respondido').length;
+  const atr   = lista.filter(r => calcStatus(r) === 'Atrasado').length;
   document.getElementById('metrics').innerHTML = `
     <div class="metric-card"><div class="label">Total</div><div class="value">${total}</div></div>
     <div class="metric-card"><div class="label">Pendentes</div><div class="value c-amber">${pend}</div></div>
     <div class="metric-card"><div class="label">Respondidos</div><div class="value c-green">${resp}</div></div>
-    <div class="metric-card"><div class="label">Em atraso</div><div class="value c-red">${atr}</div></div>
-  `;
+    <div class="metric-card"><div class="label">Em atraso</div><div class="value c-red">${atr}</div></div>`;
 }
 
 function renderFiltros() {
   const sel = document.getElementById('filtroResp');
   const cur = sel.value;
   const lista = getDadosAtivos();
-  const resps = [...new Set(lista.map(d=>d.resp).filter(Boolean))].sort();
-  sel.innerHTML = '<option value="">Todos os responsáveis</option>' + resps.map(r=>`<option value="${r}">${r}</option>`).join('');
+  const resps = [...new Set(lista.map(d => d.resp).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todos os responsáveis</option>' +
+    resps.map(r => `<option value="${r}">${r}</option>`).join('');
   sel.value = cur;
 }
 
 function renderTabela() {
-  const busca = (document.getElementById('busca').value||'').toLowerCase();
-  const fS = document.getElementById('filtroStatus').value;
-  const fR = document.getElementById('filtroResp').value;
+  const busca = (document.getElementById('busca').value || '').toLowerCase();
+  const fS    = document.getElementById('filtroStatus').value;
+  const fR    = document.getElementById('filtroResp').value;
   const lista = getDadosAtivos();
-  const filtrado = lista.filter(r=>{
+  const filtrado = lista.filter(r => {
     const s = calcStatus(r);
     return (!busca || r.assunto.toLowerCase().includes(busca) || (r.resp||'').toLowerCase().includes(busca))
-      && (!fS || s===fS)
-      && (!fR || r.resp===fR);
+        && (!fS || s === fS)
+        && (!fR || r.resp === fR);
   });
   document.getElementById('count-label').textContent = `${filtrado.length} de ${lista.length} e-mails`;
   const tbody = document.getElementById('tbody');
   if (!filtrado.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg><p>Nenhum e-mail encontrado.</p></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg><p>Nenhum e-mail encontrado.</p></div></td></tr>`;
     return;
   }
-  tbody.innerHTML = filtrado.map(r=>{
-    const s = calcStatus(r);
+  tbody.innerHTML = filtrado.map(r => {
+    const s     = calcStatus(r);
     const owner = r._user || viewUser;
-    const u = USERS[owner] || USERS[currentUser];
-    // Edit/delete só para o dono ou se viewUser === currentUser
+    const u     = USERS[owner] || USERS[currentUser];
     const canEdit = !r._user || r._user === currentUser;
     const ownerBadge = viewUser === 'all'
-      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:${u.color};font-weight:600;"><span style="width:6px;height:6px;border-radius:50%;background:${u.color};display:inline-block;"></span>${u.label}</span>`
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:${u.color};font-weight:600;">
+           <span style="width:6px;height:6px;border-radius:50%;background:${u.color};display:inline-block;"></span>${u.label}
+         </span>`
       : '';
+    const docId = r._docId || String(r.id).padStart(6,'0');
     return `<tr>
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;">${fmtDate(r.envio)}</td>
       <td>
@@ -921,9 +866,20 @@ function renderTabela() {
       <td style="max-width:180px;font-size:12px;color:var(--text2);">${r.obs||''}</td>
       <td style="white-space:nowrap;">
         ${canEdit ? `
-        <button class="btn-edit" onclick="editarEmail('${owner}',${r.id})" title="Editar"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-        <button class="btn-icon" onclick="pedirDelete('${owner}',${r.id})" title="Remover"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
-        ` : `<span style="font-size:11px;color:var(--text3);">só leitura</span>`}
+          <button class="btn-edit" onclick="editarEmail('${owner}','${docId}')" title="Editar">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="btn-icon" onclick="pedirDelete('${owner}','${docId}')" title="Remover">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+            </svg>
+          </button>` :
+          `<span style="font-size:11px;color:var(--text3);">só leitura</span>`}
       </td>
     </tr>`;
   }).join('');
@@ -931,12 +887,14 @@ function renderTabela() {
 
 function render() { renderMetrics(); renderFiltros(); renderTabela(); }
 
-// ===================== NAVIGATION =====================
+// =====================================================================
+// NAVIGATION
+// =====================================================================
 function switchPage(p) {
-  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
   document.getElementById('nav-painel').classList.remove('active');
   document.getElementById('nav-novo').classList.remove('active');
-  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('page-' + p).classList.add('active');
   if (p === 'painel') document.getElementById('nav-painel').classList.add('active');
   if (p === 'novo') {
     document.getElementById('nav-novo').classList.add('active');
@@ -951,69 +909,75 @@ function switchPage(p) {
 function cancelarForm() { editIdx = null; switchPage('painel'); }
 
 function limparForm() {
-  ['f-envio','f-prazo','f-assunto','f-resp','f-ultima','f-obs'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('f-status').value='Pendente';
-  document.getElementById('f-cobrar').value='No prazo';
+  ['f-envio','f-prazo','f-assunto','f-resp','f-ultima','f-obs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-status').value = 'Pendente';
+  document.getElementById('f-cobrar').value = 'No prazo';
 }
 
-// ===================== CRUD =====================
-// editIdx agora é { user, id }
-function editarEmail(user, id) {
+// =====================================================================
+// CRUD
+// =====================================================================
+function editarEmail(user, docId) {
   const arr = allData[user] || [];
-  const r = arr.find(x => x.id === id);
+  const r   = arr.find(x => x._docId === docId || String(x.id).padStart(6,'0') === docId);
   if (!r) return;
-  editIdx = { user, id };
-  document.getElementById('f-envio').value = r.envio||'';
-  document.getElementById('f-prazo').value = r.prazo||'';
-  document.getElementById('f-assunto').value = r.assunto||'';
-  document.getElementById('f-resp').value = r.resp||'';
-  document.getElementById('f-status').value = r.status||'Pendente';
-  document.getElementById('f-cobrar').value = r.cobranca||'No prazo';
-  document.getElementById('f-ultima').value = r.ultima||'';
-  document.getElementById('f-obs').value = r.obs||'';
+  editIdx = { user, docId };
+  document.getElementById('f-envio').value   = r.envio   || '';
+  document.getElementById('f-prazo').value   = r.prazo   || '';
+  document.getElementById('f-assunto').value = r.assunto || '';
+  document.getElementById('f-resp').value    = r.resp    || '';
+  document.getElementById('f-status').value  = r.status  || 'Pendente';
+  document.getElementById('f-cobrar').value  = r.cobranca || 'No prazo';
+  document.getElementById('f-ultima').value  = r.ultima  || '';
+  document.getElementById('f-obs').value     = r.obs     || '';
   document.getElementById('form-title').textContent = 'Editar e-mail';
   switchPage('novo');
 }
 
 async function salvarEmail() {
-  const envio = document.getElementById('f-envio').value;
+  const envio   = document.getElementById('f-envio').value;
   const assunto = document.getElementById('f-assunto').value.trim();
   if (!envio || !assunto) { showToast('Preencha a data de envio e o assunto.'); return; }
 
   const targetUser = editIdx ? editIdx.user : currentUser;
   const arr = allData[targetUser] || [];
 
-  const registro = {
-    id: editIdx ? editIdx.id : nextId(targetUser),
-    envio, assunto,
-    prazo: document.getElementById('f-prazo').value,
-    status: document.getElementById('f-status').value,
-    cobranca: document.getElementById('f-cobrar').value,
-    resp: document.getElementById('f-resp').value.trim().toUpperCase(),
-    ultima: document.getElementById('f-ultima').value,
-    obs: document.getElementById('f-obs').value.trim(),
-  };
-
+  let newId;
   if (editIdx) {
-    const idx = arr.findIndex(x => x.id === editIdx.id);
-    if (idx >= 0) arr[idx] = registro;
-    showToast('E-mail atualizado!');
+    const r = arr.find(x => x._docId === editIdx.docId || String(x.id).padStart(6,'0') === editIdx.docId);
+    newId = r ? r.id : nextId(targetUser);
   } else {
-    arr.unshift(registro);
-    showToast('E-mail salvo!');
+    newId = nextId(targetUser);
   }
 
-  allData[targetUser] = arr;
+  const registro = {
+    id:       newId,
+    envio,
+    assunto,
+    prazo:    document.getElementById('f-prazo').value,
+    status:   document.getElementById('f-status').value,
+    cobranca: document.getElementById('f-cobrar').value,
+    resp:     document.getElementById('f-resp').value.trim().toUpperCase(),
+    ultima:   document.getElementById('f-ultima').value,
+    obs:      document.getElementById('f-obs').value.trim(),
+  };
+
+  showLoading('Salvando...');
+  try {
+    const docId = editIdx ? editIdx.docId : String(newId).padStart(6,'0');
+    await window._fsSetDoc(docRef(targetUser, docId), registro);
+    showToast(editIdx ? 'E-mail atualizado!' : 'E-mail salvo!');
+  } catch(e) {
+    showToast('Erro ao salvar. Verifique a conexão.');
+    console.error(e);
+  }
+  hideLoading();
   editIdx = null;
-  await salvarUsuario(targetUser);
-  render();
   switchPage('painel');
 }
 
-// deleteIdx = { user, id }
-let deleteTarget = null;
-function pedirDelete(user, id) {
-  deleteTarget = { user, id };
+function pedirDelete(user, docId) {
+  deleteTarget = { user, docId };
   document.getElementById('modal-del').classList.add('open');
 }
 function fecharModal() {
@@ -1022,42 +986,51 @@ function fecharModal() {
 }
 async function confirmarDelete() {
   if (deleteTarget) {
-    const arr = allData[deleteTarget.user] || [];
-    const idx = arr.findIndex(x => x.id === deleteTarget.id);
-    if (idx >= 0) arr.splice(idx, 1);
-    allData[deleteTarget.user] = arr;
-    await salvarUsuario(deleteTarget.user);
-    render();
+    showLoading('Removendo...');
+    try {
+      await deletarNoFirestore(deleteTarget.user, deleteTarget.docId);
+      showToast('E-mail removido.');
+    } catch(e) {
+      showToast('Erro ao remover.');
+      console.error(e);
+    }
+    hideLoading();
   }
   fecharModal();
-  showToast('E-mail removido.');
 }
 
-// ===================== EXPORT =====================
+// =====================================================================
+// EXPORT CSV
+// =====================================================================
 function exportarCSV() {
   const lista = getDadosAtivos();
-  const cols = ['Usuário','Envio','Assunto','Prazo','Status','Responsável','Cobrar?','Última Cobrança','Observações'];
-  const rows = lista.map(r=>[
+  const cols  = ['Usuário','Envio','Assunto','Prazo','Status','Responsável','Cobrar?','Última Cobrança','Observações'];
+  const rows  = lista.map(r => [
     USERS[r._user || currentUser]?.label || '',
-    r.envio, r.assunto, r.prazo||'', calcStatus(r), r.resp||'', r.cobranca||'', r.ultima||'', (r.obs||'').replace(/"/g,'""')
-  ].map(v=>`"${v}"`).join(','));
+    r.envio, r.assunto, r.prazo||'', calcStatus(r), r.resp||'', r.cobranca||'', r.ultima||'',
+    (r.obs||'').replace(/"/g,'""')
+  ].map(v => `"${v}"`).join(','));
   const csv = [cols.join(','), ...rows].join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  const a   = document.createElement('a');
+  a.href     = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
   a.download = 'controle-emails-' + new Date().toISOString().split('T')[0] + '.csv';
   a.click();
   showToast('CSV exportado!');
 }
 
-// ===================== TOAST =====================
+// =====================================================================
+// TOAST
+// =====================================================================
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ===================== INITIAL DATA (May's existing data) =====================
+// =====================================================================
+// INITIAL DATA (seed da May na primeira vez)
+// =====================================================================
 function getInitialData() {
   return [
     {id:1,envio:'2026-05-21',assunto:'CANCELAR PROPOSTA 1000999890821 KELVIN BISPO GALVAO DE BARROS',prazo:'2026-05-24',status:'Respondido',cobranca:'Resolvido',resp:'LUCIANO',ultima:'',obs:'Vão abater a diferença no próximo mês, R$ 69,37'},
@@ -1075,7 +1048,9 @@ function getInitialData() {
   ];
 }
 
-// ===================== EVENTS =====================
+// =====================================================================
+// EVENTS
+// =====================================================================
 document.getElementById('modal-del').addEventListener('click', e => {
   if (e.target === document.getElementById('modal-del')) fecharModal();
 });
