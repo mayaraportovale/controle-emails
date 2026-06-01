@@ -13,21 +13,15 @@
     getFirestore, collection, doc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy
   } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
-  // =====================================================================
-  // 🔧 CONFIGURAÇÃO DO FIREBASE
-  // Substitua os valores abaixo pelos do seu projeto Firebase.
-  // Crie em: https://console.firebase.google.com
-  // Projeto → Configurações → Seus apps → Adicionar app Web → copiar firebaseConfig
-  // =====================================================================
   const firebaseConfig = {
-    apiKey:            "COLOQUE_SUA_API_KEY_AQUI",
-    authDomain:        "COLOQUE_SEU_AUTH_DOMAIN_AQUI",
-    projectId:         "COLOQUE_SEU_PROJECT_ID_AQUI",
-    storageBucket:     "COLOQUE_SEU_STORAGE_BUCKET_AQUI",
-    messagingSenderId: "COLOQUE_SEU_MESSAGING_SENDER_ID_AQUI",
-    appId:             "COLOQUE_SEU_APP_ID_AQUI"
+    apiKey:            "AIzaSyD8nJba9hqgA_ynSZyQbZA4DlULsdAk6mg",
+    authDomain:        "emails-1bc48.firebaseapp.com",
+    projectId:         "emails-1bc48",
+    storageBucket:     "emails-1bc48.firebasestorage.app",
+    messagingSenderId: "329179966634",
+    appId:             "1:329179966634:web:c5d9c804bdb279a78d74d3",
+    measurementId:     "G-BB5QXR5LT9"
   };
-  // =====================================================================
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
