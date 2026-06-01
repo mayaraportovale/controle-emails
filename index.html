@@ -10,7 +10,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
   import {
-    getFirestore, collection, doc, getDocs, setDoc, deleteDoc, onSnapshot, query, orderBy
+    getFirestore, collection, doc, getDocs, setDoc, deleteDoc, onSnapshot
   } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -26,7 +26,6 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // Expõe para o código global
   window._db           = db;
   window._fsDoc        = doc;
   window._fsColl       = collection;
@@ -34,170 +33,77 @@
   window._fsSetDoc     = setDoc;
   window._fsDeleteDoc  = deleteDoc;
   window._fsOnSnapshot = onSnapshot;
-  window._fsQuery      = query;
-  window._fsOrderBy    = orderBy;
-
   window._firebaseReady = true;
   window.dispatchEvent(new Event('firebase-ready'));
 </script>
 
 <style>
   :root {
-    --bg: #F7F6F2;
-    --surface: #FFFFFF;
-    --surface2: #F0EEE8;
-    --border: #E2DFD6;
-    --border2: #CCC9BE;
-    --text: #1A1916;
-    --text2: #6B6860;
-    --text3: #9C9A93;
-    --accent: #1A1916;
+    --bg: #F7F6F2; --surface: #FFFFFF; --surface2: #F0EEE8;
+    --border: #E2DFD6; --border2: #CCC9BE;
+    --text: #1A1916; --text2: #6B6860; --text3: #9C9A93;
     --green-bg: #EAF3DE; --green-text: #2D5A0E;
     --amber-bg: #FEF3DC; --amber-text: #7A4F00;
     --red-bg: #FDEDED; --red-text: #8B1A1A;
     --blue-bg: #E8F0FB; --blue-text: #1A3F7A;
     --teal-bg: #E0F5EE; --teal-text: #0A5C42;
-    --may-color: #6D4C9F;
-    --lu-color: #1A6B5A;
-    --radius: 10px;
-    --radius-sm: 6px;
+    --may-color: #6D4C9F; --lu-color: #1A6B5A;
+    --radius: 10px; --radius-sm: 6px;
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-lg: 0 4px 24px rgba(0,0,0,0.08);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; line-height: 1.5; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-
-  /* ========== LOGIN ========== */
-  #login-screen {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-  }
-  .login-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 48px 40px;
-    text-align: center;
-    box-shadow: var(--shadow-lg);
-    width: 360px;
-  }
+  /* LOGIN */
+  #login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; text-align: center; box-shadow: var(--shadow-lg); width: 360px; }
   .login-logo { font-size: 32px; margin-bottom: 8px; }
   .login-title { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
   .login-sub { font-size: 13px; color: var(--text3); margin-bottom: 32px; }
   .login-btns { display: flex; flex-direction: column; gap: 12px; }
-  .login-btn {
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    padding: 14px 24px; border-radius: var(--radius);
-    border: 2px solid var(--border); background: var(--surface);
-    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: all 0.18s; color: var(--text);
-  }
+  .login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px 24px; border-radius: var(--radius); border: 2px solid var(--border); background: var(--surface); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; color: var(--text); }
   .login-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
   .login-btn.may { border-color: var(--may-color); color: var(--may-color); }
   .login-btn.may:hover { background: #f5f0ff; }
   .login-btn.lu { border-color: var(--lu-color); color: var(--lu-color); }
   .login-btn.lu:hover { background: #f0faf7; }
-  .login-btn .avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700; color: #fff;
-  }
+  .login-btn .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
   .login-btn.may .avatar { background: var(--may-color); }
   .login-btn.lu .avatar { background: var(--lu-color); }
 
-  /* Firebase config warning */
-  .firebase-warning {
-    background: #FEF3DC;
-    border: 1px solid #f0c060;
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-size: 12px;
-    color: #7A4F00;
-    text-align: left;
-    margin-bottom: 20px;
-    display: none;
-  }
-  .firebase-warning strong { display: block; margin-bottom: 4px; }
-
-  /* ========== APP ========== */
+  /* APP */
   #app-screen { display: none; }
   .layout { display: flex; min-height: 100vh; }
-
-  .sidebar {
-    width: 220px; background: var(--surface); border-right: 1px solid var(--border);
-    padding: 28px 0; display: flex; flex-direction: column;
-    position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
-  }
+  .sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 28px 0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
   .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
-  .sidebar-logo span {
-    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--text);
-  }
-  .sidebar-logo small {
-    display: block; font-size: 11px; color: var(--text3);
-    margin-top: 2px; font-weight: 400; letter-spacing: 0; text-transform: none;
-  }
-
+  .sidebar-logo span { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text); }
+  .sidebar-logo small { display: block; font-size: 11px; color: var(--text3); margin-top: 2px; font-weight: 400; letter-spacing: 0; text-transform: none; }
   .user-badge { display: flex; align-items: center; gap: 8px; padding: 0 20px 16px; margin-bottom: 4px; }
-  .user-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
-  }
+  .user-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
   .user-name-label { font-size: 12.5px; font-weight: 600; }
   .user-role { font-size: 11px; color: var(--text3); }
-
-  .nav-item {
-    display: flex; align-items: center; gap: 10px; padding: 9px 20px;
-    font-size: 13.5px; color: var(--text2); cursor: pointer;
-    border: none; background: none; width: 100%; text-align: left;
-    border-radius: 0; transition: background 0.15s, color 0.15s;
-  }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; font-size: 13.5px; color: var(--text2); cursor: pointer; border: none; background: none; width: 100%; text-align: left; transition: background 0.15s, color 0.15s; }
   .nav-item:hover { background: var(--surface2); color: var(--text); }
   .nav-item.active { background: var(--text); color: #fff; }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-
   .sidebar-footer { margin-top: auto; padding: 16px 20px 0; border-top: 1px solid var(--border); }
   .sidebar-footer p { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
-  .btn-logout {
-    font-size: 11px; color: var(--text3); background: none;
-    border: none; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif;
-    text-decoration: underline;
-  }
+  .btn-logout { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 0; font-family: 'DM Sans', sans-serif; text-decoration: underline; }
   .btn-logout:hover { color: var(--red-text); }
 
   /* MAIN */
   .main { margin-left: 220px; flex: 1; padding: 32px 36px; max-width: 1200px; }
   .page { display: none; }
   .page.active { display: block; }
-  .page-header {
-    display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px;
-  }
+  .page-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
   .page-title { font-size: 22px; font-weight: 600; }
   .page-sub { font-size: 13px; color: var(--text3); margin-top: 3px; }
 
   /* METRICS */
   .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
-  .metric-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow);
-  }
-  .metric-card .label {
-    font-size: 11px; font-weight: 500; text-transform: uppercase;
-    letter-spacing: 0.07em; color: var(--text3); margin-bottom: 8px;
-  }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); }
+  .metric-card .label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); margin-bottom: 8px; }
   .metric-card .value { font-size: 30px; font-weight: 600; font-family: 'DM Mono', monospace; }
   .metric-card .value.c-amber { color: #7A4F00; }
   .metric-card .value.c-green { color: #2D5A0E; }
@@ -208,39 +114,28 @@
   .search-wrap { position: relative; flex: 2; min-width: 200px; }
   .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--text3); pointer-events: none; }
   .search-wrap input { padding-left: 32px; }
-
-  input[type=text], input[type=date], select, textarea {
-    font-family: 'DM Sans', sans-serif; font-size: 13.5px; padding: 8px 12px;
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    background: var(--surface); color: var(--text); width: 100%;
-    outline: none; transition: border-color 0.15s;
-  }
+  input[type=text], input[type=date], select, textarea { font-family: 'DM Sans', sans-serif; font-size: 13.5px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); width: 100%; outline: none; transition: border-color 0.15s; }
   input:focus, select:focus, textarea:focus { border-color: var(--text); }
-  textarea { resize: vertical; min-height: 80px; }
+  textarea { resize: vertical; min-height: 70px; }
 
   /* TABLE */
-  .table-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
-  }
+  .table-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead { background: var(--surface2); }
-  th {
-    padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3);
-    white-space: nowrap; border-bottom: 1px solid var(--border);
-  }
+  th { padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); white-space: nowrap; border-bottom: 1px solid var(--border); }
   td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: var(--surface2); }
   .assunto-cell { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+  /* COMENTÁRIOS na tabela */
+  .obs-preview { font-size: 11.5px; color: var(--text2); max-width: 200px; }
+  .obs-preview .obs-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .obs-preview .obs-author { font-size: 10px; color: var(--text3); font-weight: 600; }
+
   /* BADGES */
-  .badge {
-    display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
-    font-weight: 500; padding: 3px 9px; border-radius: 99px; white-space: nowrap;
-  }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
   .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.7; }
   .badge-pendente { background: var(--amber-bg); color: var(--amber-text); }
   .badge-respondido { background: var(--green-bg); color: var(--green-text); }
@@ -250,13 +145,7 @@
   .badge-sim { background: var(--amber-bg); color: var(--amber-text); }
 
   /* BUTTONS */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
-    border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif;
-    font-size: 13.5px; font-weight: 500; cursor: pointer;
-    border: 1px solid var(--border); background: var(--surface); color: var(--text);
-    transition: background 0.15s, border-color 0.15s; text-decoration: none;
-  }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text); transition: background 0.15s, border-color 0.15s; text-decoration: none; }
   .btn:hover { background: var(--surface2); }
   .btn-primary { background: var(--text); color: #fff; border-color: var(--text); }
   .btn-primary:hover { background: #333; }
@@ -268,15 +157,27 @@
   .btn-edit svg { width: 15px; height: 15px; }
 
   /* FORM */
-  .form-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); max-width: 700px;
-  }
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 32px; box-shadow: var(--shadow); max-width: 760px; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-group.full { grid-column: 1 / -1; }
   label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); }
   .form-actions { margin-top: 24px; display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* HISTÓRICO DE COMENTÁRIOS */
+  .historico-section { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .historico-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); margin-bottom: 12px; }
+  .historico-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; max-height: 280px; overflow-y: auto; }
+  .historico-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 14px; }
+  .historico-item-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .historico-avatar { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .historico-autor { font-size: 12px; font-weight: 600; }
+  .historico-hora { font-size: 11px; color: var(--text3); margin-left: auto; font-family: 'DM Mono', monospace; }
+  .historico-texto { font-size: 13px; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+  .historico-empty { font-size: 12px; color: var(--text3); font-style: italic; }
+  .novo-comentario-wrap { display: flex; gap: 8px; align-items: flex-end; }
+  .novo-comentario-wrap textarea { flex: 1; min-height: 60px; }
+  .btn-comentar { flex-shrink: 0; padding: 8px 14px; white-space: nowrap; }
 
   /* EMPTY */
   .empty-state { text-align: center; padding: 48px 20px; color: var(--text3); }
@@ -284,63 +185,33 @@
   .empty-state p { font-size: 14px; }
 
   /* MODAL */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-    z-index: 200; align-items: center; justify-content: center;
-  }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 200; align-items: center; justify-content: center; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface); border-radius: var(--radius); padding: 28px 32px;
-    width: 560px; max-width: 95vw; box-shadow: var(--shadow-lg);
-  }
+  .modal { background: var(--surface); border-radius: var(--radius); padding: 28px 32px; width: 560px; max-width: 95vw; box-shadow: var(--shadow-lg); }
   .modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 20px; }
 
   /* TOAST */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff;
-    padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
-    opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s;
-    z-index: 999; pointer-events: none;
-  }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 12px 20px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; z-index: 999; pointer-events: none; }
   .toast.show { opacity: 1; transform: translateY(0); }
 
   /* TABLE ACTIONS */
-  .table-actions {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface);
-  }
+  .table-actions { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
   .count-label { font-size: 12px; color: var(--text3); }
 
-  /* SYNC indicator */
-  .sync-dot {
-    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-    background: #2D5A0E; margin-right: 5px; vertical-align: middle;
-    animation: pulse-sync 2s ease-in-out infinite;
-  }
+  /* SYNC */
+  .sync-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #2D5A0E; margin-right: 5px; vertical-align: middle; animation: pulse-sync 2s ease-in-out infinite; }
   .sync-dot.offline { background: var(--red-text); animation: none; }
   @keyframes pulse-sync { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* LOADING OVERLAY */
-  .loading-overlay {
-    position: fixed; inset: 0; background: rgba(247,246,242,0.9);
-    z-index: 500; display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 12px; font-size: 14px; color: var(--text2);
-  }
+  /* LOADING */
+  .loading-overlay { position: fixed; inset: 0; background: rgba(247,246,242,0.9); z-index: 500; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; font-size: 14px; color: var(--text2); }
   .loading-overlay.hidden { display: none; }
-  .spinner {
-    width: 28px; height: 28px; border: 3px solid var(--border);
-    border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite;
-  }
+  .spinner { width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* USER TABS */
+  /* VIEW TABS */
   .view-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
-  .view-tab {
-    display: flex; align-items: center; gap: 6px; padding: 6px 14px;
-    border-radius: 99px; border: 1px solid var(--border); background: var(--surface);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; color: var(--text2); transition: all 0.15s;
-  }
+  .view-tab { display: flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; color: var(--text2); transition: all 0.15s; }
   .view-tab:hover { background: var(--surface2); }
   .view-tab.active { background: var(--text); color: #fff; border-color: var(--text); }
   .view-tab .dot { width: 8px; height: 8px; border-radius: 50%; }
@@ -357,38 +228,27 @@
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading-overlay hidden" id="loading-overlay">
   <div class="spinner"></div>
   <span id="loading-msg">Carregando...</span>
 </div>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">📬</div>
     <div class="login-title">Controle de E-mails</div>
     <div class="login-sub">Backoffice — quem está acessando?</div>
-    <div class="firebase-warning" id="firebase-warning">
-      <strong>⚠️ Firebase não configurado</strong>
-      Abra o arquivo index.html e substitua os valores <code>COLOQUE_SUA_*</code>
-      pelas credenciais do seu projeto Firebase. Veja o README para instruções.
-    </div>
     <div class="login-btns">
-      <button class="login-btn may" onclick="entrar('may')">
-        <div class="avatar">M</div>May
-      </button>
-      <button class="login-btn lu" onclick="entrar('lu')">
-        <div class="avatar">L</div>Lu
-      </button>
+      <button class="login-btn may" onclick="entrar('may')"><div class="avatar">M</div>May</button>
+      <button class="login-btn lu"  onclick="entrar('lu')"><div class="avatar">L</div>Lu</button>
     </div>
   </div>
 </div>
 
-<!-- APP SCREEN -->
+<!-- APP -->
 <div id="app-screen">
 <div class="layout">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
       <span>📬 Backoffice</span>
@@ -413,13 +273,12 @@
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <!-- PAINEL -->
     <div id="page-painel" class="page active">
       <div class="page-header">
         <div>
-          <div class="page-title" id="painel-title">Painel de E-mails</div>
+          <div class="page-title">Painel de E-mails</div>
           <div class="page-sub" id="hoje-label"></div>
         </div>
         <button class="btn btn-primary" onclick="switchPage('novo')">
@@ -427,10 +286,8 @@
           Novo e-mail
         </button>
       </div>
-
       <div class="view-tabs" id="view-tabs"></div>
       <div class="metrics" id="metrics"></div>
-
       <div class="filters">
         <div class="search-wrap">
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -446,7 +303,6 @@
           <option value="">Todos os responsáveis</option>
         </select>
       </div>
-
       <div class="table-card">
         <div class="table-actions">
           <span class="count-label" id="count-label"></span>
@@ -460,7 +316,7 @@
             <thead>
               <tr>
                 <th>Envio</th><th>Assunto</th><th>Prazo</th><th>Status</th>
-                <th>Responsável</th><th>Cobrar?</th><th>Observações</th><th></th>
+                <th>Responsável</th><th>Cobrar?</th><th>Último comentário</th><th></th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -515,11 +371,24 @@
             <label>Última cobrança</label>
             <input type="date" id="f-ultima">
           </div>
-          <div class="form-group full">
-            <label>Observações</label>
-            <textarea id="f-obs" placeholder="Detalhes, tratativas, andamento..."></textarea>
+        </div>
+
+        <!-- HISTÓRICO DE COMENTÁRIOS (só aparece ao editar) -->
+        <div class="historico-section" id="historico-section" style="display:none;">
+          <div class="historico-title">💬 Histórico de observações</div>
+          <div class="historico-list" id="historico-list"></div>
+          <div class="novo-comentario-wrap">
+            <textarea id="f-novo-comentario" placeholder="Escreva uma observação..."></textarea>
+            <button class="btn btn-primary btn-comentar" onclick="adicionarComentario()">Comentar</button>
           </div>
         </div>
+
+        <!-- Campo obs simples só para novo e-mail -->
+        <div class="form-group full" id="obs-simples-wrap" style="margin-top:18px;">
+          <label>Observação inicial</label>
+          <textarea id="f-obs" placeholder="Detalhes, tratativas, andamento..."></textarea>
+        </div>
+
         <div class="form-actions">
           <button class="btn" onclick="cancelarForm()">Cancelar</button>
           <button class="btn btn-primary" onclick="salvarEmail()">Salvar e-mail</button>
@@ -530,7 +399,7 @@
 </div>
 </div>
 
-<!-- MODAL CONFIRMAR DELETE -->
+<!-- MODAL DELETE -->
 <div class="modal-overlay" id="modal-del">
   <div class="modal">
     <h3>Remover e-mail?</h3>
@@ -545,84 +414,35 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// =====================================================================
-// USERS
-// =====================================================================
 const USERS = {
   may: { label: 'May', color: '#6D4C9F', initial: 'M' },
   lu:  { label: 'Lu',  color: '#1A6B5A', initial: 'L' }
 };
 
-let currentUser = null;
-let viewUser    = null;
-let editIdx     = null;   // { user, docId }
+let currentUser  = null;
+let viewUser     = null;
+let editIdx      = null;   // { user, docId }
 let deleteTarget = null;
-let allData     = { may: [], lu: [] };
-let unsubscribes = [];     // Firestore listeners
+let allData      = { may: [], lu: [] };
+let unsubscribes = [];
 
-// =====================================================================
-// FIREBASE CHECK
-// =====================================================================
-function isFirebaseConfigured() {
-  // Verifica se as chaves ainda têm o placeholder
-  try {
-    const db = window._db;
-    if (!db) return false;
-    const cfg = db.app.options;
-    return cfg.apiKey && !cfg.apiKey.includes('COLOQUE');
-  } catch(e) { return false; }
-}
+// ── Helpers Firestore ────────────────────────────────────────────────
+function collRef(user) { return window._fsColl(window._db, `emails_${user}`); }
+function dRef(user, id) { return window._fsDoc(window._db, `emails_${user}`, id); }
+function fromFS(snap) { return { ...snap.data(), _docId: snap.id }; }
 
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (!window._firebaseReady || !isFirebaseConfigured()) {
-      document.getElementById('firebase-warning').style.display = 'block';
-    }
-  }, 1500);
-});
-
-// =====================================================================
-// FIRESTORE HELPERS
-// =====================================================================
-function getCollectionRef(user) {
-  return window._fsColl(window._db, `emails_${user}`);
-}
-
-function docRef(user, docId) {
-  return window._fsDoc(window._db, `emails_${user}`, docId);
-}
-
-// Converte documento Firestore → objeto local
-function fromFirestore(snap) {
-  return { ...snap.data(), _docId: snap.id };
-}
-
-// =====================================================================
-// AUTH
-// =====================================================================
+// ── Auth ─────────────────────────────────────────────────────────────
 async function entrar(user) {
-  if (!window._firebaseReady) {
-    showToast('Firebase não inicializado. Configure as credenciais.');
-    return;
-  }
-  currentUser = user;
-  viewUser    = user;
-
+  if (!window._firebaseReady) { showToast('Firebase não inicializado.'); return; }
+  currentUser = user; viewUser = user;
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-screen').style.display   = 'block';
-
   const u = USERS[user];
   document.getElementById('user-badge').innerHTML = `
     <div class="user-avatar" style="background:${u.color}">${u.initial}</div>
-    <div>
-      <div class="user-name-label">${u.label}</div>
-      <div class="user-role">Logada</div>
-    </div>`;
-
-  const hoje = new Date();
+    <div><div class="user-name-label">${u.label}</div><div class="user-role">Logada</div></div>`;
   document.getElementById('hoje-label').textContent =
-    hoje.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-
+    new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   await carregarTodos();
   iniciarListeners();
   renderViewTabs();
@@ -630,176 +450,126 @@ async function entrar(user) {
 }
 
 function sair() {
-  // Para os listeners em tempo real
-  unsubscribes.forEach(fn => fn());
-  unsubscribes = [];
-
-  currentUser = null;
-  viewUser    = null;
-  allData     = { may: [], lu: [] };
+  unsubscribes.forEach(fn => fn()); unsubscribes = [];
+  currentUser = null; viewUser = null; allData = { may: [], lu: [] };
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('app-screen').style.display   = 'none';
   switchPage('painel');
 }
 
-// =====================================================================
-// LOAD / REALTIME LISTENERS
-// =====================================================================
-function showLoading(msg) {
-  document.getElementById('loading-overlay').classList.remove('hidden');
-  document.getElementById('loading-msg').textContent = msg || 'Carregando...';
-}
-function hideLoading() {
-  document.getElementById('loading-overlay').classList.add('hidden');
-}
+// ── Loading ──────────────────────────────────────────────────────────
+function showLoading(m) { document.getElementById('loading-overlay').classList.remove('hidden'); document.getElementById('loading-msg').textContent = m || 'Carregando...'; }
+function hideLoading()  { document.getElementById('loading-overlay').classList.add('hidden'); }
 
+// ── Carregar / Listeners ─────────────────────────────────────────────
 async function carregarTodos() {
   showLoading('Carregando dados...');
   try {
-    for (const user of ['may', 'lu']) {
-      const snap = await window._fsGetDocs(getCollectionRef(user));
-      if (snap.empty && user === 'may') {
-        // Primeira vez: seed com dados iniciais da May
+    for (const u of ['may','lu']) {
+      const snap = await window._fsGetDocs(collRef(u));
+      if (snap.empty && u === 'may') {
         await seedInitialData();
-        const snap2 = await window._fsGetDocs(getCollectionRef('may'));
-        allData.may = snap2.docs.map(fromFirestore);
+        const s2 = await window._fsGetDocs(collRef('may'));
+        allData.may = s2.docs.map(fromFS);
       } else {
-        allData[user] = snap.docs.map(fromFirestore);
+        allData[u] = snap.docs.map(fromFS);
       }
     }
-  } catch(e) {
-    console.error('Erro ao carregar:', e);
-    showToast('Erro ao conectar ao Firebase. Verifique a configuração.');
-  }
+  } catch(e) { console.error(e); showToast('Erro ao conectar ao Firebase.'); }
   hideLoading();
 }
 
-// Insere os dados iniciais da May no Firestore (só na primeira vez)
-async function seedInitialData() {
-  const initial = getInitialData();
-  for (const r of initial) {
-    const id = String(r.id).padStart(6, '0');
-    await window._fsSetDoc(docRef('may', id), { ...r });
-  }
-}
-
-// Listener em tempo real — atualiza a tela de ambas sempre que o Firestore mudar
 function iniciarListeners() {
-  for (const user of ['may', 'lu']) {
-    const unsub = window._fsOnSnapshot(getCollectionRef(user), (snap) => {
-      allData[user] = snap.docs.map(fromFirestore);
+  for (const u of ['may','lu']) {
+    const unsub = window._fsOnSnapshot(collRef(u), snap => {
+      allData[u] = snap.docs.map(fromFS);
       setSyncStatus(true);
       if (currentUser) render();
-    }, (err) => {
-      console.error('Listener error:', err);
-      setSyncStatus(false);
-    });
+    }, err => { console.error(err); setSyncStatus(false); });
     unsubscribes.push(unsub);
   }
 }
 
-function setSyncStatus(online) {
-  const dot  = document.getElementById('sync-dot');
+function setSyncStatus(ok) {
   const info = document.getElementById('save-info');
-  if (!dot) return;
-  if (online) {
-    dot.classList.remove('offline');
-    const now = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    info.innerHTML = `<span class="sync-dot" id="sync-dot"></span>Atualizado ${now}`;
-  } else {
-    dot.classList.add('offline');
-    info.innerHTML = `<span class="sync-dot offline" id="sync-dot"></span>Sem conexão`;
+  if (!info) return;
+  const now = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  info.innerHTML = ok
+    ? `<span class="sync-dot" id="sync-dot"></span>Atualizado ${now}`
+    : `<span class="sync-dot offline" id="sync-dot"></span>Sem conexão`;
+}
+
+// ── Seed ─────────────────────────────────────────────────────────────
+async function seedInitialData() {
+  for (const r of getInitialData()) {
+    const id = String(r.id).padStart(6,'0');
+    // obs antiga vira primeiro comentário no histórico
+    const comentarios = r.obs ? [{
+      autor: 'may', texto: r.obs,
+      hora: new Date('2026-05-01T08:00:00').toISOString()
+    }] : [];
+    await window._fsSetDoc(dRef('may', id), { ...r, obs: undefined, comentarios });
   }
 }
 
-// =====================================================================
-// SAVE / DELETE
-// =====================================================================
-async function salvarNoFirestore(user, registro) {
-  const id = String(registro.id || registro._docId).padStart(6, '0');
-  const { _docId, _user, ...data } = registro; // remove campos locais
-  await window._fsSetDoc(docRef(user, id), data);
-  return id;
-}
-
-async function deletarNoFirestore(user, docId) {
-  await window._fsDeleteDoc(docRef(user, docId));
-}
-
-// =====================================================================
-// DATA HELPERS
-// =====================================================================
+// ── Dados ativos ──────────────────────────────────────────────────────
 function getDadosAtivos() {
   if (viewUser === 'all') {
-    const mayD = (allData.may || []).map(r => ({ ...r, _user: 'may' }));
-    const luD  = (allData.lu  || []).map(r => ({ ...r, _user: 'lu'  }));
-    return [...mayD, ...luD].sort((a, b) => (b.id || 0) - (a.id || 0));
+    const m = (allData.may||[]).map(r=>({...r,_user:'may'}));
+    const l = (allData.lu ||[]).map(r=>({...r,_user:'lu'}));
+    return [...m,...l].sort((a,b)=>(b.id||0)-(a.id||0));
   }
-  return (allData[viewUser] || []).sort((a, b) => (b.id || 0) - (a.id || 0));
+  return (allData[viewUser]||[]).sort((a,b)=>(b.id||0)-(a.id||0));
 }
 
 function nextId(user) {
-  const arr = allData[user] || [];
-  return arr.length ? Math.max(...arr.map(d => d.id || 0)) + 1 : 1;
+  const arr = allData[user]||[];
+  return arr.length ? Math.max(...arr.map(d=>d.id||0))+1 : 1;
 }
 
-// =====================================================================
-// VIEW TABS
-// =====================================================================
+// ── View tabs ─────────────────────────────────────────────────────────
 function renderViewTabs() {
-  const tabs = document.getElementById('view-tabs');
-  tabs.innerHTML = `
-    <button class="view-tab ${viewUser === currentUser ? 'active' : ''}" onclick="setViewUser('${currentUser}')">
-      <span class="dot" style="background:${USERS[currentUser].color}"></span>
-      Meus e-mails
+  document.getElementById('view-tabs').innerHTML = `
+    <button class="view-tab ${viewUser===currentUser?'active':''}" onclick="setViewUser('${currentUser}')">
+      <span class="dot" style="background:${USERS[currentUser].color}"></span>Meus e-mails
     </button>
-    <button class="view-tab ${viewUser === 'all' ? 'active' : ''}" onclick="setViewUser('all')">
-      <span class="dot" style="background:#9C9A93"></span>
-      Todos
+    <button class="view-tab ${viewUser==='all'?'active':''}" onclick="setViewUser('all')">
+      <span class="dot" style="background:#9C9A93"></span>Todos
     </button>`;
 }
+function setViewUser(u) { viewUser=u; renderViewTabs(); render(); }
 
-function setViewUser(u) {
-  viewUser = u;
-  renderViewTabs();
-  render();
-}
-
-// =====================================================================
-// UTILS
-// =====================================================================
+// ── Utils ─────────────────────────────────────────────────────────────
 const HOJE = new Date(); HOJE.setHours(0,0,0,0);
 function calcStatus(r) {
-  if (r.status === 'Respondido') return 'Respondido';
+  if (r.status==='Respondido') return 'Respondido';
   if (!r.prazo) return 'Pendente';
-  const p = new Date(r.prazo + 'T00:00:00');
-  return p < HOJE ? 'Atrasado' : 'Pendente';
+  return new Date(r.prazo+'T00:00:00') < HOJE ? 'Atrasado' : 'Pendente';
 }
-function fmtDate(iso) {
-  if (!iso) return '—';
-  const [y,m,d] = iso.split('-');
-  return `${d}/${m}/${y}`;
+function fmtDate(iso) { if(!iso) return '—'; const[y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+function fmtHora(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}) + ' ' +
+         d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
 }
 function badgeStatus(s) {
-  const m = { Pendente:'pendente', Respondido:'respondido', Atrasado:'atrasado' };
+  const m={Pendente:'pendente',Respondido:'respondido',Atrasado:'atrasado'};
   return `<span class="badge badge-${m[s]||'pendente'}">${s}</span>`;
 }
 function badgeCobrar(c) {
-  if (!c || c==='—') return '—';
-  const m = { Resolvido:'resolvido', 'No prazo':'prazo', Sim:'sim' };
+  if(!c||c==='—') return '—';
+  const m={Resolvido:'resolvido','No prazo':'prazo',Sim:'sim'};
   return `<span class="badge badge-${m[c]||'pendente'}">${c}</span>`;
 }
 
-// =====================================================================
-// RENDER
-// =====================================================================
+// ── Render ────────────────────────────────────────────────────────────
 function renderMetrics() {
-  const lista = getDadosAtivos();
-  const total = lista.length;
-  const pend  = lista.filter(r => calcStatus(r) === 'Pendente').length;
-  const resp  = lista.filter(r => calcStatus(r) === 'Respondido').length;
-  const atr   = lista.filter(r => calcStatus(r) === 'Atrasado').length;
-  document.getElementById('metrics').innerHTML = `
+  const lista=getDadosAtivos(), total=lista.length;
+  const pend=lista.filter(r=>calcStatus(r)==='Pendente').length;
+  const resp=lista.filter(r=>calcStatus(r)==='Respondido').length;
+  const atr =lista.filter(r=>calcStatus(r)==='Atrasado').length;
+  document.getElementById('metrics').innerHTML=`
     <div class="metric-card"><div class="label">Total</div><div class="value">${total}</div></div>
     <div class="metric-card"><div class="label">Pendentes</div><div class="value c-amber">${pend}</div></div>
     <div class="metric-card"><div class="label">Respondidos</div><div class="value c-green">${resp}</div></div>
@@ -807,73 +577,72 @@ function renderMetrics() {
 }
 
 function renderFiltros() {
-  const sel = document.getElementById('filtroResp');
-  const cur = sel.value;
-  const lista = getDadosAtivos();
-  const resps = [...new Set(lista.map(d => d.resp).filter(Boolean))].sort();
-  sel.innerHTML = '<option value="">Todos os responsáveis</option>' +
-    resps.map(r => `<option value="${r}">${r}</option>`).join('');
-  sel.value = cur;
+  const sel=document.getElementById('filtroResp'), cur=sel.value;
+  const resps=[...new Set(getDadosAtivos().map(d=>d.resp).filter(Boolean))].sort();
+  sel.innerHTML='<option value="">Todos os responsáveis</option>'+resps.map(r=>`<option value="${r}">${r}</option>`).join('');
+  sel.value=cur;
 }
 
 function renderTabela() {
-  const busca = (document.getElementById('busca').value || '').toLowerCase();
-  const fS    = document.getElementById('filtroStatus').value;
-  const fR    = document.getElementById('filtroResp').value;
-  const lista = getDadosAtivos();
-  const filtrado = lista.filter(r => {
-    const s = calcStatus(r);
-    return (!busca || r.assunto.toLowerCase().includes(busca) || (r.resp||'').toLowerCase().includes(busca))
-        && (!fS || s === fS)
-        && (!fR || r.resp === fR);
+  const busca=(document.getElementById('busca').value||'').toLowerCase();
+  const fS=document.getElementById('filtroStatus').value;
+  const fR=document.getElementById('filtroResp').value;
+  const lista=getDadosAtivos();
+  const filtrado=lista.filter(r=>{
+    const s=calcStatus(r);
+    return (!busca||r.assunto.toLowerCase().includes(busca)||(r.resp||'').toLowerCase().includes(busca))
+        && (!fS||s===fS) && (!fR||r.resp===fR);
   });
-  document.getElementById('count-label').textContent = `${filtrado.length} de ${lista.length} e-mails`;
-  const tbody = document.getElementById('tbody');
+  document.getElementById('count-label').textContent=`${filtrado.length} de ${lista.length} e-mails`;
+  const tbody=document.getElementById('tbody');
   if (!filtrado.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state">
       <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
         <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
       </svg><p>Nenhum e-mail encontrado.</p></div></td></tr>`;
     return;
   }
-  tbody.innerHTML = filtrado.map(r => {
-    const s     = calcStatus(r);
-    const owner = r._user || viewUser;
-    const u     = USERS[owner] || USERS[currentUser];
-    const canEdit = !r._user || r._user === currentUser;
-    const ownerBadge = viewUser === 'all'
-      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:${u.color};font-weight:600;">
-           <span style="width:6px;height:6px;border-radius:50%;background:${u.color};display:inline-block;"></span>${u.label}
-         </span>`
-      : '';
-    const docId = r._docId || String(r.id).padStart(6,'0');
+  tbody.innerHTML=filtrado.map(r=>{
+    const s=calcStatus(r);
+    const owner=r._user||viewUser;
+    const u=USERS[owner]||USERS[currentUser];
+    const docId=r._docId||String(r.id).padStart(6,'0');
+    const ownerBadge=viewUser==='all'
+      ?`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:${u.color};font-weight:600;">
+          <span style="width:6px;height:6px;border-radius:50%;background:${u.color};display:inline-block;"></span>${u.label}
+        </span>` : '';
+    // Último comentário
+    const coms=(r.comentarios||[]).slice().sort((a,b)=>new Date(b.hora)-new Date(a.hora));
+    const ultimo=coms[0];
+    const obsCell=ultimo
+      ?`<div class="obs-preview">
+          <div class="obs-author" style="color:${USERS[ultimo.autor]?.color||'var(--text3)'}">
+            ${USERS[ultimo.autor]?.label||ultimo.autor} · ${fmtHora(ultimo.hora)}
+          </div>
+          <div class="obs-line">${ultimo.texto}</div>
+        </div>` : '<span style="color:var(--text3);font-size:12px;">—</span>';
     return `<tr>
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;">${fmtDate(r.envio)}</td>
-      <td>
-        <div class="assunto-cell" title="${r.assunto}">${r.assunto}</div>
-        ${ownerBadge}
-      </td>
+      <td><div class="assunto-cell" title="${r.assunto}">${r.assunto}</div>${ownerBadge}</td>
       <td style="white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px;">${fmtDate(r.prazo)}</td>
       <td>${badgeStatus(s)}</td>
       <td style="white-space:nowrap;font-weight:500;">${r.resp||'—'}</td>
       <td>${badgeCobrar(r.cobranca)}</td>
-      <td style="max-width:180px;font-size:12px;color:var(--text2);">${r.obs||''}</td>
+      <td>${obsCell}</td>
       <td style="white-space:nowrap;">
-        ${canEdit ? `
-          <button class="btn-edit" onclick="editarEmail('${owner}','${docId}')" title="Editar">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </button>
-          <button class="btn-icon" onclick="pedirDelete('${owner}','${docId}')" title="Remover">
-            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-              <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
-            </svg>
-          </button>` :
-          `<span style="font-size:11px;color:var(--text3);">só leitura</span>`}
+        <button class="btn-edit" onclick="editarEmail('${owner}','${docId}')" title="Editar">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+        <button class="btn-icon" onclick="pedirDelete('${owner}','${docId}')" title="Remover">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+          </svg>
+        </button>
       </td>
     </tr>`;
   }).join('');
@@ -881,150 +650,194 @@ function renderTabela() {
 
 function render() { renderMetrics(); renderFiltros(); renderTabela(); }
 
-// =====================================================================
-// NAVIGATION
-// =====================================================================
+// ── Navegação ─────────────────────────────────────────────────────────
 function switchPage(p) {
-  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
-  document.getElementById('nav-painel').classList.remove('active');
-  document.getElementById('nav-novo').classList.remove('active');
-  document.getElementById('page-' + p).classList.add('active');
-  if (p === 'painel') document.getElementById('nav-painel').classList.add('active');
-  if (p === 'novo') {
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  ['nav-painel','nav-novo'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if (p==='painel') document.getElementById('nav-painel').classList.add('active');
+  if (p==='novo') {
     document.getElementById('nav-novo').classList.add('active');
-    if (editIdx === null) {
+    if (editIdx===null) {
       limparForm();
-      document.getElementById('form-title').textContent = 'Novo e-mail';
-      document.getElementById('f-envio').value = new Date().toISOString().split('T')[0];
+      document.getElementById('form-title').textContent='Novo e-mail';
+      document.getElementById('f-envio').value=new Date().toISOString().split('T')[0];
     }
   }
 }
 
-function cancelarForm() { editIdx = null; switchPage('painel'); }
+function cancelarForm() { editIdx=null; switchPage('painel'); }
 
 function limparForm() {
-  ['f-envio','f-prazo','f-assunto','f-resp','f-ultima','f-obs'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('f-status').value = 'Pendente';
-  document.getElementById('f-cobrar').value = 'No prazo';
+  ['f-envio','f-prazo','f-assunto','f-resp','f-ultima','f-obs'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('f-status').value='Pendente';
+  document.getElementById('f-cobrar').value='No prazo';
+  document.getElementById('f-novo-comentario').value='';
+  document.getElementById('historico-section').style.display='none';
+  document.getElementById('obs-simples-wrap').style.display='';
 }
 
-// =====================================================================
-// CRUD
-// =====================================================================
-function editarEmail(user, docId) {
-  const arr = allData[user] || [];
-  const r   = arr.find(x => x._docId === docId || String(x.id).padStart(6,'0') === docId);
+// ── Histórico de comentários ──────────────────────────────────────────
+function renderHistorico(comentarios) {
+  const lista=document.getElementById('historico-list');
+  const coms=(comentarios||[]).slice().sort((a,b)=>new Date(a.hora)-new Date(b.hora));
+  if (!coms.length) {
+    lista.innerHTML='<div class="historico-empty">Nenhuma observação ainda.</div>';
+    return;
+  }
+  lista.innerHTML=coms.map(c=>{
+    const u=USERS[c.autor];
+    return `<div class="historico-item">
+      <div class="historico-item-header">
+        <div class="historico-avatar" style="background:${u?.color||'#999'}">${u?.initial||'?'}</div>
+        <span class="historico-autor" style="color:${u?.color||'#999'}">${u?.label||c.autor}</span>
+        <span class="historico-hora">${fmtHora(c.hora)}</span>
+      </div>
+      <div class="historico-texto">${c.texto}</div>
+    </div>`;
+  }).join('');
+  // scroll para o final
+  lista.scrollTop=lista.scrollHeight;
+}
+
+async function adicionarComentario() {
+  const texto=document.getElementById('f-novo-comentario').value.trim();
+  if (!texto) { showToast('Escreva algo antes de comentar.'); return; }
+  if (!editIdx) return;
+
+  const arr=allData[editIdx.user]||[];
+  const r=arr.find(x=>x._docId===editIdx.docId||String(x.id).padStart(6,'0')===editIdx.docId);
   if (!r) return;
-  editIdx = { user, docId };
-  document.getElementById('f-envio').value   = r.envio   || '';
-  document.getElementById('f-prazo').value   = r.prazo   || '';
-  document.getElementById('f-assunto').value = r.assunto || '';
-  document.getElementById('f-resp').value    = r.resp    || '';
-  document.getElementById('f-status').value  = r.status  || 'Pendente';
-  document.getElementById('f-cobrar').value  = r.cobranca || 'No prazo';
-  document.getElementById('f-ultima').value  = r.ultima  || '';
-  document.getElementById('f-obs').value     = r.obs     || '';
-  document.getElementById('form-title').textContent = 'Editar e-mail';
+
+  const novoComentario={
+    autor: currentUser,
+    texto,
+    hora: new Date().toISOString()
+  };
+  const comentarios=[...(r.comentarios||[]), novoComentario];
+
+  showLoading('Salvando comentário...');
+  try {
+    const docId=editIdx.docId;
+    const {_docId,_user,...data}=r;
+    await window._fsSetDoc(dRef(editIdx.user, docId), {...data, comentarios});
+    document.getElementById('f-novo-comentario').value='';
+    renderHistorico(comentarios);
+    showToast('Comentário salvo!');
+  } catch(e) { showToast('Erro ao salvar comentário.'); console.error(e); }
+  hideLoading();
+}
+
+// ── CRUD ──────────────────────────────────────────────────────────────
+function editarEmail(user, docId) {
+  const arr=allData[user]||[];
+  const r=arr.find(x=>x._docId===docId||String(x.id).padStart(6,'0')===docId);
+  if (!r) return;
+  editIdx={user,docId};
+  document.getElementById('f-envio').value   = r.envio   ||'';
+  document.getElementById('f-prazo').value   = r.prazo   ||'';
+  document.getElementById('f-assunto').value = r.assunto ||'';
+  document.getElementById('f-resp').value    = r.resp    ||'';
+  document.getElementById('f-status').value  = r.status  ||'Pendente';
+  document.getElementById('f-cobrar').value  = r.cobranca||'No prazo';
+  document.getElementById('f-ultima').value  = r.ultima  ||'';
+  document.getElementById('f-novo-comentario').value='';
+  // Mostra histórico, esconde obs simples
+  document.getElementById('historico-section').style.display='';
+  document.getElementById('obs-simples-wrap').style.display='none';
+  renderHistorico(r.comentarios||[]);
+  document.getElementById('form-title').textContent='Editar e-mail';
   switchPage('novo');
 }
 
 async function salvarEmail() {
-  const envio   = document.getElementById('f-envio').value;
-  const assunto = document.getElementById('f-assunto').value.trim();
-  if (!envio || !assunto) { showToast('Preencha a data de envio e o assunto.'); return; }
+  const envio  =document.getElementById('f-envio').value;
+  const assunto=document.getElementById('f-assunto').value.trim();
+  if (!envio||!assunto) { showToast('Preencha a data de envio e o assunto.'); return; }
 
-  const targetUser = editIdx ? editIdx.user : currentUser;
-  const arr = allData[targetUser] || [];
+  const targetUser=editIdx?editIdx.user:currentUser;
+  const arr=allData[targetUser]||[];
 
   let newId;
   if (editIdx) {
-    const r = arr.find(x => x._docId === editIdx.docId || String(x.id).padStart(6,'0') === editIdx.docId);
-    newId = r ? r.id : nextId(targetUser);
+    const r=arr.find(x=>x._docId===editIdx.docId||String(x.id).padStart(6,'0')===editIdx.docId);
+    newId=r?r.id:nextId(targetUser);
+  } else { newId=nextId(targetUser); }
+
+  // Comentários existentes (edição) ou obs inicial (novo)
+  let comentarios=[];
+  if (editIdx) {
+    const r=arr.find(x=>x._docId===editIdx.docId||String(x.id).padStart(6,'0')===editIdx.docId);
+    comentarios=r?.comentarios||[];
   } else {
-    newId = nextId(targetUser);
+    const obsInicial=document.getElementById('f-obs').value.trim();
+    if (obsInicial) comentarios=[{autor:currentUser, texto:obsInicial, hora:new Date().toISOString()}];
   }
 
-  const registro = {
+  const registro={
     id:       newId,
-    envio,
-    assunto,
+    envio,    assunto,
     prazo:    document.getElementById('f-prazo').value,
     status:   document.getElementById('f-status').value,
     cobranca: document.getElementById('f-cobrar').value,
     resp:     document.getElementById('f-resp').value.trim().toUpperCase(),
     ultima:   document.getElementById('f-ultima').value,
-    obs:      document.getElementById('f-obs').value.trim(),
+    comentarios,
   };
 
   showLoading('Salvando...');
   try {
-    const docId = editIdx ? editIdx.docId : String(newId).padStart(6,'0');
-    await window._fsSetDoc(docRef(targetUser, docId), registro);
-    showToast(editIdx ? 'E-mail atualizado!' : 'E-mail salvo!');
-  } catch(e) {
-    showToast('Erro ao salvar. Verifique a conexão.');
-    console.error(e);
-  }
+    const docId=editIdx?editIdx.docId:String(newId).padStart(6,'0');
+    await window._fsSetDoc(dRef(targetUser,docId),registro);
+    showToast(editIdx?'E-mail atualizado!':'E-mail salvo!');
+  } catch(e) { showToast('Erro ao salvar. Verifique a conexão.'); console.error(e); }
   hideLoading();
-  editIdx = null;
+  editIdx=null;
   switchPage('painel');
 }
 
-function pedirDelete(user, docId) {
-  deleteTarget = { user, docId };
-  document.getElementById('modal-del').classList.add('open');
-}
-function fecharModal() {
-  deleteTarget = null;
-  document.getElementById('modal-del').classList.remove('open');
-}
+function pedirDelete(user,docId) { deleteTarget={user,docId}; document.getElementById('modal-del').classList.add('open'); }
+function fecharModal() { deleteTarget=null; document.getElementById('modal-del').classList.remove('open'); }
 async function confirmarDelete() {
   if (deleteTarget) {
     showLoading('Removendo...');
-    try {
-      await deletarNoFirestore(deleteTarget.user, deleteTarget.docId);
-      showToast('E-mail removido.');
-    } catch(e) {
-      showToast('Erro ao remover.');
-      console.error(e);
-    }
+    try { await window._fsDeleteDoc(dRef(deleteTarget.user,deleteTarget.docId)); showToast('E-mail removido.'); }
+    catch(e) { showToast('Erro ao remover.'); console.error(e); }
     hideLoading();
   }
   fecharModal();
 }
 
-// =====================================================================
-// EXPORT CSV
-// =====================================================================
+// ── Exportar CSV ──────────────────────────────────────────────────────
 function exportarCSV() {
-  const lista = getDadosAtivos();
-  const cols  = ['Usuário','Envio','Assunto','Prazo','Status','Responsável','Cobrar?','Última Cobrança','Observações'];
-  const rows  = lista.map(r => [
-    USERS[r._user || currentUser]?.label || '',
-    r.envio, r.assunto, r.prazo||'', calcStatus(r), r.resp||'', r.cobranca||'', r.ultima||'',
-    (r.obs||'').replace(/"/g,'""')
-  ].map(v => `"${v}"`).join(','));
-  const csv = [cols.join(','), ...rows].join('\n');
-  const a   = document.createElement('a');
-  a.href     = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
-  a.download = 'controle-emails-' + new Date().toISOString().split('T')[0] + '.csv';
+  const lista=getDadosAtivos();
+  const cols=['Usuário','Envio','Assunto','Prazo','Status','Responsável','Cobrar?','Última Cobrança','Comentários'];
+  const rows=lista.map(r=>{
+    const coms=(r.comentarios||[]).map(c=>`[${USERS[c.autor]?.label||c.autor} ${fmtHora(c.hora)}] ${c.texto}`).join(' | ');
+    return [
+      USERS[r._user||currentUser]?.label||'',
+      r.envio,r.assunto,r.prazo||'',calcStatus(r),r.resp||'',r.cobranca||'',r.ultima||'',
+      coms.replace(/"/g,'""')
+    ].map(v=>`"${v}"`).join(',');
+  });
+  const csv=[cols.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='controle-emails-'+new Date().toISOString().split('T')[0]+'.csv';
   a.click();
   showToast('CSV exportado!');
 }
 
-// =====================================================================
-// TOAST
-// =====================================================================
+// ── Toast ─────────────────────────────────────────────────────────────
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-// =====================================================================
-// INITIAL DATA (seed da May na primeira vez)
-// =====================================================================
+// ── Initial Data (seed) ───────────────────────────────────────────────
 function getInitialData() {
   return [
     {id:1,envio:'2026-05-21',assunto:'CANCELAR PROPOSTA 1000999890821 KELVIN BISPO GALVAO DE BARROS',prazo:'2026-05-24',status:'Respondido',cobranca:'Resolvido',resp:'LUCIANO',ultima:'',obs:'Vão abater a diferença no próximo mês, R$ 69,37'},
@@ -1042,11 +855,8 @@ function getInitialData() {
   ];
 }
 
-// =====================================================================
-// EVENTS
-// =====================================================================
 document.getElementById('modal-del').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal-del')) fecharModal();
+  if (e.target===document.getElementById('modal-del')) fecharModal();
 });
 </script>
 </body>
