@@ -506,11 +506,11 @@ function renderViewTabs(){
 function setViewUser(u){viewUser=u;metricFilter=null;renderViewTabs();render();}
 
 // ── Utils ─────────────────────────────────────────────────────────────
-const HOJE=new Date();HOJE.setHours(0,0,0,0);
+function getHoje(){const h=new Date();h.setHours(0,0,0,0);return h;}
 function calcStatus(r){
   if(r.status==='Respondido')return'Respondido';
   if(!r.prazo)return'Pendente';
-  return new Date(r.prazo+'T00:00:00')<HOJE?'Atrasado':'Pendente';
+  return new Date(r.prazo+'T00:00:00')<getHoje()?'Atrasado':'Pendente';
 }
 function fmtDate(iso){if(!iso)return'—';const[y,m,d]=iso.split('-');return`${d}/${m}/${y}`;}
 function fmtHora(iso){
@@ -790,7 +790,7 @@ function editarEmail(user,docId){
   document.getElementById('f-prazo').value   =r.prazo   ||'';
   document.getElementById('f-assunto').value =r.assunto ||'';
   document.getElementById('f-resp').value    =r.resp    ||'';
-  document.getElementById('f-status').value  =r.status  ||'Pendente';
+  document.getElementById('f-status').value  =calcStatus(r);
   document.getElementById('f-cobrar').value  =r.cobranca||'No prazo';
   document.getElementById('f-ultima').value  =r.ultima  ||'';
   document.getElementById('f-novo-comentario').value='';
