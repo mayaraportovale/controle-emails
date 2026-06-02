@@ -744,9 +744,10 @@ function pedirDeleteComentario(idx){
   document.getElementById('modal-del-com').classList.add('open');
 }
 async function confirmarDeleteComentario(){
-  fecharModal('modal-del-com');
   if(!deleteComTarget||!editIdx)return;
   const{idx}=deleteComTarget;
+  deleteComTarget=null;
+  fecharModal('modal-del-com');
   const arr=allData[editIdx.user]||[];
   const r=arr.find(x=>x._docId===editIdx.docId||String(x.id).padStart(6,'0')===editIdx.docId);
   if(!r)return;
