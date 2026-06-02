@@ -509,6 +509,7 @@ function setViewUser(u){viewUser=u;metricFilter=null;renderViewTabs();render();}
 function getHoje(){const h=new Date();h.setHours(0,0,0,0);return h;}
 function calcStatus(r){
   if(r.status==='Respondido')return'Respondido';
+  if(r.status==='Atrasado')return'Atrasado';
   if(!r.prazo)return'Pendente';
   return new Date(r.prazo+'T00:00:00')<getHoje()?'Atrasado':'Pendente';
 }
