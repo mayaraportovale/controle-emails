@@ -108,7 +108,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .search-wrap{position:relative;flex:2;min-width:200px;}
 .search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--text3);pointer-events:none;}
 .search-wrap input{padding-left:32px;}
-input[type=text],input[type=date],select,textarea{font-family:'DM Sans',sans-serif;font-size:13.5px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);width:100%;outline:none;transition:border-color 0.15s;}
+input[type=text],input[type=password],input[type=date],select,textarea{font-family:'DM Sans',sans-serif;font-size:13.5px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);width:100%;outline:none;transition:border-color 0.15s;}
 input:focus,select:focus,textarea:focus{border-color:var(--text);}
 textarea{resize:vertical;min-height:70px;}
 
@@ -243,11 +243,27 @@ label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.0
   <div class="login-box">
     <div class="login-logo">📬</div>
     <div class="login-title">Controle de E-mails</div>
-    <div class="login-sub">Backoffice — quem está acessando?</div>
-    <div class="login-btns">
-      <button class="login-btn may" onclick="entrar('may')"><div class="avatar">M</div>May</button>
-      <button class="login-btn lu"  onclick="entrar('lu')"><div class="avatar">L</div>Lu</button>
-    </div>
+    <div class="login-sub">Backoffice — faça login para continuar</div>
+
+    <form class="login-form" onsubmit="autenticar(event)">
+      <div class="form-group" style="text-align:left;margin-bottom:14px;">
+        <label>Usuário</label>
+        <input type="text" id="login-user" placeholder="Mayara ou Luana" autocomplete="username" required>
+      </div>
+
+      <div class="form-group" style="text-align:left;margin-bottom:18px;">
+        <label>Senha</label>
+        <input type="password" id="login-pass" placeholder="Digite sua senha" autocomplete="current-password" required>
+      </div>
+
+      <button type="submit" class="login-btn" style="width:100%;background:var(--text);color:#fff;border-color:var(--text);">
+        Entrar
+      </button>
+
+      <div id="login-error" style="display:none;margin-top:14px;font-size:12px;color:var(--red-text);font-weight:600;">
+        Usuário ou senha inválidos.
+      </div>
+    </form>
   </div>
 </div>
 
@@ -414,6 +430,35 @@ function showLoading(m){document.getElementById('loading-overlay').classList.rem
 function hideLoading(){document.getElementById('loading-overlay').classList.add('hidden');}
 
 // ── Auth ──────────────────────────────────────────────────────────────
+// ATENÇÃO: esta é uma camada de senha no front-end. Para segurança real, use Firebase Auth + Firestore Rules.
+const AUTH_USERS={
+  mayara:{userKey:'may',nome:'Mayara',senha:'GreadminPV123@!'},
+  luana:{userKey:'lu',nome:'Luana',senha:'GreadminPV123@!'}
+};
+
+function normalizarLogin(v){
+  return String(v||'').trim().toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+
+async function autenticar(event){
+  event.preventDefault();
+
+  const login=normalizarLogin(document.getElementById('login-user').value);
+  const senha=document.getElementById('login-pass').value;
+  const erro=document.getElementById('login-error');
+  const auth=AUTH_USERS[login];
+
+  if(!auth||auth.senha!==senha){
+    erro.style.display='block';
+    return;
+  }
+
+  erro.style.display='none';
+  sessionStorage.setItem('pv_email_auth',JSON.stringify({userKey:auth.userKey,nome:auth.nome,login}));
+  await entrar(auth.userKey);
+}
+
 async function entrar(user){
   if(!window._firebaseReady){showToast('Firebase não inicializado.');return;}
   currentUser=user;viewUser=user;
@@ -433,6 +478,9 @@ async function entrar(user){
 function sair(){
   unsubscribes.forEach(f=>f());unsubscribes=[];
   currentUser=null;viewUser=null;allData={may:[],lu:[]};metricFilter=null;
+  sessionStorage.removeItem('pv_email_auth');
+  document.getElementById('login-user').value='';
+  document.getElementById('login-pass').value='';
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app-screen').style.display='none';
   switchPage('painel');
@@ -877,6 +925,19 @@ function getInitialData(){return[
   {id:11,envio:'2026-05-31',assunto:'BACKOFFICE I DUPLICIDADE 13389252886 ISAIAS ONESIO VITO',prazo:'2026-06-05',status:'Pendente',cobranca:'No prazo',resp:'LORRANE',ultima:'',obs:''},
   {id:12,envio:'2026-06-03',assunto:'BACKOFFICE I CONTRATO ASSINADO PORTO SR. TIE LOCACAO DE TERNOS LTDA',prazo:'2026-06-07',status:'Pendente',cobranca:'No prazo',resp:'HUGO FRANÇA',ultima:'',obs:''},
 ];}
+
+
+// Mantém a sessão ativa apenas enquanto a aba estiver aberta.
+window.addEventListener('firebase-ready',async()=>{
+  try{
+    const auth=JSON.parse(sessionStorage.getItem('pv_email_auth')||'null');
+    if(auth?.userKey&&USERS[auth.userKey]&&!currentUser){
+      await entrar(auth.userKey);
+    }
+  }catch(e){
+    sessionStorage.removeItem('pv_email_auth');
+  }
+});
 
 ['modal-del','modal-del-com'].forEach(id=>{
   document.getElementById(id).addEventListener('click',e=>{if(e.target===document.getElementById(id))fecharModal(id);});
