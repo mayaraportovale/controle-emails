@@ -192,7 +192,7 @@
 </main>
 
 <main id="page-history" class="hidden">
-  <div class="setup-banner" id="setup-banner">
+  <div class="setup-banner hidden" id="setup-banner">
     <span class="setup-icon">⚙️</span>
     <div class="setup-text">
       <strong>Configure o Google Sheets para salvar em nuvem</strong>
@@ -231,7 +231,8 @@
 
 <script>
 const API_URL_KEY = "portovale_api_url";
-function getApiUrl() { return localStorage.getItem(API_URL_KEY) || ""; }
+const FIXED_API_URL = "https://script.google.com/macros/s/AKfycbzTGywZPe6Uzm_FpPDOZlV8lfXTyz6tJYHW0O7kWiFVAWXpOAx9JSXVrKr4EGjFM8P9Vw/exec";
+function getApiUrl() { return "https://script.google.com/macros/s/AKfycbzTGywZPe6Uzm_FpPDOZlV8lfXTyz6tJYHW0O7kWiFVAWXpOAx9JSXVrKr4EGjFM8P9Vw/exec"; }
 function saveApiUrl() {
   const url = document.getElementById("api-url-input").value.trim();
   if (!url.startsWith("https://script.google.com")) { showToast("URL inválida.", "error"); return; }
